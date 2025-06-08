@@ -1,0 +1,66 @@
+# === Go ===
+bin/
+*.exe
+*.test
+*.out
+*.log
+coverage.out
+
+# Go Modules
+vendor/
+
+# Go Build cache
+*.a
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+.eggs/
+
+# Pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# Pyright
+.pyright/
+
+# === Protobuf generated files
+*.pb.go
+*.pb.gw.go
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+
+# === Docker ===
+*.dockerfile
+docker-compose.override.yml
+
+# === System ===
+.DS_Store
+Thumbs.db
+
+# === Logs ===
+logs/
+*.log
+*.bak
+*.tmp
+
+# === Secrets (если вдруг появятся) ===
+.env
+.env.local
+.env.development
+.env.production
+.env.*
