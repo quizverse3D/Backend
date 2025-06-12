@@ -1,32 +1,44 @@
 package user
 
-import "sync"
+import (
+	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type Storage struct {
-	users map[string]User
-	mu    sync.Mutex
+	db *pgxpool.Pool
 }
 
-func NewStorage() *Storage {
-	return &Storage{users: make(map[string]User)}
+func NewStorage(pool *pgxpool.Pool) *Storage {
+	return &Storage{db: pool}
 }
 
 func (s *Storage) CreateUser(u User) error {
-	s.mu.Lock()         // синхронная блокировка единственного хранилища
-	defer s.mu.Unlock() // разблокировка хранилища после исполнения всего кода метода (за счёт defer)
+	_, err := s.db.Exec(context.Background(),
+		"INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",
+		u.ID, u.Username, u.Password,
+	)
 
-	if _, exists := s.users[u.Username]; exists { // _ содержит значение ключа, но нам оно неинтересно
-		return ErrUserExists
+	if err == nil {
+		// ошибок нет, пользователь создан
+		return nil
 	}
 
-	s.users[u.Username] = u
-	return nil
+	return err
 }
 
 func (s *Storage) GetUser(username string) (User, bool) {
-	s.mu.Lock() // да, на чтение тоже блокировка-разблокировка
-	defer s.mu.Unlock()
+	row := s.db.QueryRow(context.Background(),
+		"SELECT id, username, password FROM users WHERE username = $1",
+		username,
+	)
 
-	u, ok := s.users[username]
-	return u, ok
+	var u User
+	err := row.Scan(&u.ID, &u.Username, &u.Password)
+	if err != nil {
+		return User{}, false
+	}
+
+	return u, true
 }

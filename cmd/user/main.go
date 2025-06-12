@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/quizverse3D/Backend/internal/user" // бизнес-логика
+	"github.com/quizverse3D/Backend/internal/common" // БД
+	"github.com/quizverse3D/Backend/internal/user"   // бизнес-логика
 )
 
 func main() {
@@ -21,8 +22,14 @@ func main() {
 
 	mux := http.NewServeMux() // URL-маршрутизатор
 
-	userService := user.NewService()        // структура со включенным в себя Storage
-	handler := user.NewHandler(userService) // структура-обёртка вокруг userService
+	// подключаемся к БД
+	pool, err := common.NewPostgresPool()
+	if err != nil {
+		log.Fatal("Failed to connect to DB:", err)
+	}
+
+	userService := user.NewService(user.NewStorage(pool)) // структура со включенным в себя Storage
+	handler := user.NewHandler(userService)               // структура-обёртка вокруг userService
 
 	// привязка url'ов к обработчикам сервиса
 	mux.HandleFunc("/api/v1/register", handler.Register)

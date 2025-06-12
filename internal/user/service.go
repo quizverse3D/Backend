@@ -8,8 +8,8 @@ type Service struct {
 	storage *Storage
 }
 
-func NewService() *Service {
-	return &Service{storage: NewStorage()}
+func NewService(storage *Storage) *Service {
+	return &Service{storage: storage}
 }
 
 func (s *Service) Register(username, password string) (string, error) {
