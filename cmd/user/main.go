@@ -3,11 +3,22 @@ package main
 import (
 	"log"      // стандартный логгер Go для вывода в консоль.
 	"net/http" // стандартная клиент-серверная HTTP-библиотека
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/quizverse3D/Backend/internal/user" // бизнес-логика
 )
 
 func main() {
+	// Загружаем .env файл
+	if err := godotenv.Load(); err != nil {
+		log.Println(".env file not found, using system env")
+	}
+	// проверка наличия секрета для JWT
+	if os.Getenv("JWT_SECRET") == "" {
+		log.Fatal("JWT_SECRET is not set")
+	}
+
 	mux := http.NewServeMux() // URL-маршрутизатор
 
 	userService := user.NewService()        // структура со включенным в себя Storage

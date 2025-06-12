@@ -1,12 +1,13 @@
 package user
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtSecret = []byte("supersecretkey") // вынесем в ENV позже
+var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // секрет в env или .env
 
 type Claims struct {
 	UserID               string `json:"user_id"`
