@@ -28,6 +28,12 @@ func main() {
 		log.Fatal("Failed to connect to DB:", err)
 	}
 
+	redisClient, err := common.NewRedisClient()
+	if err != nil {
+		log.Fatal("Failed to connect to Redis:", err)
+	}
+	_ = redisClient // todo: начать применять
+
 	userService := user.NewService(user.NewStorage(pool)) // структура со включенным в себя Storage
 	handler := user.NewHandler(userService)               // структура-обёртка вокруг userService
 
