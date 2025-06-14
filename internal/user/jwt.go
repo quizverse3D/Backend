@@ -14,11 +14,23 @@ type Claims struct {
 	jwt.RegisteredClaims        // в поле RegisteredClaims кладём стандартные поля JWT-токена из библиотеки
 }
 
-func GenerateJWT(userID string) (string, error) {
+func GenerateAccessToken(userID string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)), // срок действия на 15 минут
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+func GenerateRefreshToken(userID string) (string, error) {
+	claims := Claims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // срок действия на 7 дней
 		},
 	}
 

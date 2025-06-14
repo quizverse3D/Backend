@@ -45,13 +45,23 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.svc.Login(creds.Username, creds.Password)
+	accessToken, refreshToken, err := h.svc.Login(creds.Username, creds.Password)
 	if err != nil {
 		// ошибка авторизации
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   7 * 24 * 60 * 60, // 7 дней
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(token))
+	w.Write([]byte(accessToken))
 }
