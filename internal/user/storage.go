@@ -16,8 +16,8 @@ func NewStorage(pool *pgxpool.Pool) *Storage {
 
 func (s *Storage) CreateUser(u User) error {
 	_, err := s.db.Exec(context.Background(),
-		"INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",
-		u.ID, u.Username, u.Password,
+		"INSERT INTO users (id, username, password, hash_algorithm) VALUES ($1, $2, $3, $4)",
+		u.ID, u.Username, u.Password, u.HashAlgorithm,
 	)
 
 	if err == nil {
@@ -30,12 +30,12 @@ func (s *Storage) CreateUser(u User) error {
 
 func (s *Storage) GetUser(username string) (User, bool) {
 	row := s.db.QueryRow(context.Background(),
-		"SELECT id, username, password FROM users WHERE username = $1",
+		"SELECT id, username, password, hash_algorithm FROM users WHERE username = $1",
 		username,
 	)
 
 	var u User
-	err := row.Scan(&u.ID, &u.Username, &u.Password)
+	err := row.Scan(&u.ID, &u.Username, &u.Password, &u.HashAlgorithm)
 	if err != nil {
 		return User{}, false
 	}

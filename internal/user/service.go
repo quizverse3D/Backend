@@ -3,10 +3,12 @@ package user
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
@@ -20,13 +22,22 @@ func NewService(storage *Storage, redisClient *redis.Client) *Service {
 
 func (s *Service) Register(username, password string) (string, error) {
 	id := uuid.NewString()
-	u := User{
-		ID:       id,
-		Username: username,
-		Password: password,
+
+	salt := os.Getenv("PASSWORD_SALT")
+	combined := password + salt
+	hashed, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
 	}
 
-	err := s.storage.CreateUser(u)
+	u := User{
+		ID:            id,
+		Username:      username,
+		Password:      string(hashed),
+		HashAlgorithm: "bcrypt",
+	}
+
+	err = s.storage.CreateUser(u)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +47,15 @@ func (s *Service) Register(username, password string) (string, error) {
 
 func (s *Service) Login(username, password string) (string, string, error) {
 	u, ok := s.storage.GetUser(username)
-	if !ok || u.Password != password {
+	if !ok {
+		return "", "", ErrInvalidCreds
+	}
+
+	salt := os.Getenv("PASSWORD_SALT")
+	combined := password + salt
+
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(combined))
+	if err != nil {
 		return "", "", ErrInvalidCreds
 	}
 
