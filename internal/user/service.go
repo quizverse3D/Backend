@@ -78,3 +78,7 @@ func (s *Service) Login(username, password string) (string, string, error) {
 
 	return accessToken, refreshToken, nil
 }
+
+func (s *Service) ValidateAccessToken(tokenStr string) (string, error) {
+	return ValidateAccessToken(tokenStr)
+}

@@ -65,3 +65,24 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(accessToken))
 }
+
+func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		AccessToken string `json:"accessToken"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid input", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := h.svc.ValidateAccessToken(payload.AccessToken)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	response := map[string]string{"userId": userID}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
