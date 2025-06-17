@@ -11,12 +11,14 @@ var jwtSecret = []byte(os.Getenv("JWT_SECRET")) // секрет в env или .e
 
 type Claims struct {
 	UserID               string `json:"user_id"`
+	TokenType            string `json:"token_type"`
 	jwt.RegisteredClaims        // в поле RegisteredClaims кладём стандартные поля JWT-токена из библиотеки
 }
 
 func GenerateAccessToken(userID string) (string, error) {
 	claims := Claims{
-		UserID: userID,
+		UserID:    userID,
+		TokenType: "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)), // срок действия на 15 минут
 		},
@@ -28,7 +30,8 @@ func GenerateAccessToken(userID string) (string, error) {
 
 func GenerateRefreshToken(userID string) (string, error) {
 	claims := Claims{
-		UserID: userID,
+		UserID:    userID,
+		TokenType: "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // срок действия на 7 дней
 		},
@@ -45,6 +48,10 @@ func ValidateAccessToken(tokenStr string) (string, error) {
 	})
 
 	if err != nil || !token.Valid {
+		return "", ErrInvalidCreds
+	}
+
+	if claims.TokenType != "access" {
 		return "", ErrInvalidCreds
 	}
 
