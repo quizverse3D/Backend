@@ -57,3 +57,20 @@ func ValidateAccessToken(tokenStr string) (string, error) {
 
 	return claims.UserID, nil
 }
+
+func ValidateRefreshToken(tokenStr string) (string, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return "", ErrInvalidCreds
+	}
+
+	if claims.TokenType != "refresh" {
+		return "", ErrInvalidCreds
+	}
+
+	return claims.UserID, nil
+}

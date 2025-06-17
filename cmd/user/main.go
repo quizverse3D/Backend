@@ -40,6 +40,7 @@ func main() {
 	mux.HandleFunc("/api/v1/register", handler.Register)
 	mux.HandleFunc("/api/v1/login", handler.Login)
 	mux.HandleFunc("/api/v1/validate-token", handler.ValidateToken)
+	mux.HandleFunc("/api/v1/refresh-token", handler.RefreshAccessToken)
 
 	log.Println("User Service running on :8081")
 	log.Fatal(http.ListenAndServe(":8081", mux)) // если сервер не может запуститься — log.Fatal(...) завершит программу с ошибкой и выведет сообщение

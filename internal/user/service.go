@@ -82,3 +82,20 @@ func (s *Service) Login(username, password string) (string, string, error) {
 func (s *Service) ValidateAccessToken(tokenStr string) (string, error) {
 	return ValidateAccessToken(tokenStr)
 }
+
+func (s *Service) RefreshAccessToken(refreshToken string) (string, error) {
+	userID, err := ValidateRefreshToken(refreshToken)
+	if err != nil {
+		return "", err
+	}
+
+	ctx := context.Background()
+	key := fmt.Sprintf("refresh:%s", userID)
+
+	stored, err := s.redisClient.Get(ctx, key).Result()
+	if err != nil || stored != refreshToken {
+		return "", ErrInvalidCreds
+	}
+
+	return GenerateAccessToken(userID)
+}

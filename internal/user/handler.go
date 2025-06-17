@@ -86,3 +86,20 @@ func (h *Handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *Handler) RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		http.Error(w, "refresh token not provided", http.StatusUnauthorized)
+		return
+	}
+
+	newAccessToken, err := h.svc.RefreshAccessToken(cookie.Value)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(newAccessToken))
+}
