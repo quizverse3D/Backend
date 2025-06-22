@@ -30,14 +30,14 @@ func (s *Service) Register(email, password string) (string, error) {
 		return "", err
 	}
 
-	u := User{
+	u := Auth{
 		ID:            id,
 		Email:         email,
 		Password:      string(hashed),
 		HashAlgorithm: "bcrypt",
 	}
 
-	err = s.storage.CreateUser(u)
+	err = s.storage.CreateAuth(u)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func (s *Service) Register(email, password string) (string, error) {
 }
 
 func (s *Service) Login(email, password string) (string, string, error) {
-	u, ok := s.storage.GetUser(email)
+	u, ok := s.storage.GetAuth(email)
 	if !ok {
 		return "", "", ErrInvalidCreds
 	}

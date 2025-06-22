@@ -1,6 +1,6 @@
 package authgateway
 
-type User struct {
+type Auth struct {
 	ID            string
 	Email         string
 	Password      string
