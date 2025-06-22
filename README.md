@@ -5,6 +5,7 @@ Backend-часть проекта **Quizverse3D** — собственной р�
 ---
 ## Запуск
 ```bash
+make protoc
 make run-all
 ```
 ---
@@ -13,20 +14,20 @@ make run-all
 
 ```bash
 backend/
-├── cmd/                # Точки входа сервисов (основные бинарники)
-│   ├── authgateway/    # API Gateway (REST -> gRPC)
-│   └── user/           # Сервис пользователей и аккаунтов
+├── cmd/                # Точки входа сервисов
+│   ├── authgateway/    # API Gateway (REST -> gRPC), аутентификация, валидация, обогащение
+│   └── user/           # Сервис пользователей
 ├── internal/           # Бизнес-логика сервисов
 │   ├── authgateway/    # Аутентификация и валидация JWT, мост с REST клиента на gRPC сервисов
-│   ├── user/           # Работа с пользователями, профили, регистрация
-│   └── common/         # Общие модули (например конфиги)
+│   ├── user/           # Работа с пользователями, профили
+│   └── common/         # Общие модули (PostgreSQL, Redis Pools)
 ├── pkg/                # Переиспользуемые пакеты (логгеры, middlewares)
 │   └── logger/         # Логирование
 ├── proto/              # Контракты gRPC (protobuf исходные файлы для общения между сервисами)
 │   ├── user.proto
 ├── python/             # Python-сервисы (нейронки, ML, генерация паков вопросов)
 │   └── ai_service/
-├── deployments/        # Kubernetes манифесты (на будущее)
+├── deployments/        # Kubernetes манифесты
 ├── scripts/            # Миграции, тестовые данные, вспомогательные скрипты
 ├── docker-compose.yml  # Локальная сборка
 ├── Makefile            # Упрощённый запуск и сборка
