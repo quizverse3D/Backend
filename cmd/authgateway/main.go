@@ -24,7 +24,13 @@ func main() {
 	mux := http.NewServeMux() // URL-маршрутизатор
 
 	// подключаемся к БД
-	pool, err := common.NewPostgresPool()
+	pool, err := common.NewPostgresPool(
+		os.Getenv("AUTHGATEWAY_DB_USER"),
+		os.Getenv("AUTHGATEWAY_DB_PASSWORD"),
+		os.Getenv("AUTHGATEWAY_DB_HOST"),
+		os.Getenv("AUTHGATEWAY_DB_PORT"),
+		os.Getenv("AUTHGATEWAY_DB_NAME"),
+	)
 	if err != nil {
 		log.Fatal("Failed to connect to DB:", err)
 	}
@@ -37,11 +43,11 @@ func main() {
 	userService := authgateway.NewService(authgateway.NewStorage(pool), redisClient) // структура со включенным в себя Storage
 	handler := authgateway.NewHandler(userService)                                   // структура-обёртка вокруг userService
 
-	// привязка url'ов к обработчикам сервиса
-	mux.HandleFunc("/api/v1/register", handler.Register)
-	mux.HandleFunc("/api/v1/login", handler.Login)
-	mux.HandleFunc("/api/v1/validate-token", handler.ValidateToken)
-	mux.HandleFunc("/api/v1/refresh-token", handler.RefreshAccessToken)
+	// привязка url'ов к обработчикам REST-сервиса
+	mux.HandleFunc("/auth/api/v1/register", handler.Register)
+	mux.HandleFunc("/auth/api/v1/login", handler.Login)
+	mux.HandleFunc("/auth/api/v1/validate-token", handler.ValidateToken)
+	mux.HandleFunc("/auth/api/v1/refresh-token", handler.RefreshAccessToken)
 
 	// проверка наличия прослушиваемого REST-порта
 	if os.Getenv("AUTHGATEWAY_REST_PORT") == "" {

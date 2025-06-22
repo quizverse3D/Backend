@@ -3,21 +3,20 @@ package common
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewPostgresPool() (*pgxpool.Pool, error) {
+func NewPostgresPool(user string, password string, host string, port string, name string) (*pgxpool.Pool, error) {
 	// собираем строку подключения
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%s dbname=%s sslmode=disable",
-		os.Getenv("AUTHGATEWAY_DB_USER"),
-		os.Getenv("AUTHGATEWAY_DB_PASSWORD"),
-		os.Getenv("AUTHGATEWAY_DB_HOST"),
-		os.Getenv("AUTHGATEWAY_DB_PORT"),
-		os.Getenv("AUTHGATEWAY_DB_NAME"),
+		user,
+		password,
+		host,
+		port,
+		name,
 	)
 
 	// Создаём контекст с таймаутом 5 секунд (если БД не отвечает — не будем ждать вечно)
