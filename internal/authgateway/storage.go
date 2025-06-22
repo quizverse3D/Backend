@@ -1,4 +1,4 @@
-package user
+package authgateway
 
 import (
 	"context"
@@ -16,8 +16,8 @@ func NewStorage(pool *pgxpool.Pool) *Storage {
 
 func (s *Storage) CreateUser(u User) error {
 	_, err := s.db.Exec(context.Background(),
-		"INSERT INTO users (id, username, password, hash_algorithm) VALUES ($1, $2, $3, $4)",
-		u.ID, u.Username, u.Password, u.HashAlgorithm,
+		"INSERT INTO credentials (id, email, password, hash_algorithm) VALUES ($1, $2, $3, $4)",
+		u.ID, u.Email, u.Password, u.HashAlgorithm,
 	)
 
 	if err == nil {
@@ -28,14 +28,14 @@ func (s *Storage) CreateUser(u User) error {
 	return err
 }
 
-func (s *Storage) GetUser(username string) (User, bool) {
+func (s *Storage) GetUser(email string) (User, bool) {
 	row := s.db.QueryRow(context.Background(),
-		"SELECT id, username, password, hash_algorithm FROM users WHERE username = $1",
-		username,
+		"SELECT id, email, password, hash_algorithm FROM credentials WHERE email = $1",
+		email,
 	)
 
 	var u User
-	err := row.Scan(&u.ID, &u.Username, &u.Password, &u.HashAlgorithm)
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.HashAlgorithm)
 	if err != nil {
 		return User{}, false
 	}

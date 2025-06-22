@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/quizverse3D/Backend/internal/common" // БД
-	"github.com/quizverse3D/Backend/internal/user"   // бизнес-логика
+	user "github.com/quizverse3D/Backend/internal/authgateway" // бизнес-логика
+	"github.com/quizverse3D/Backend/internal/common"           // БД
 )
 
 func main() {

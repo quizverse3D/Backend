@@ -1,4 +1,4 @@
-package user
+package authgateway
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ func NewHandler(svc *Service) *Handler {
 }
 
 type Credentials struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -26,7 +26,12 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.svc.Register(creds.Username, creds.Password)
+	if creds.Email == "" || creds.Password == "" {
+		http.Error(w, "email and password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	_, err := h.svc.Register(creds.Email, creds.Password)
 	if err != nil {
 		// ошибка регистрации
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -45,7 +50,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.svc.Login(creds.Username, creds.Password)
+	if creds.Email == "" || creds.Password == "" {
+		http.Error(w, "email and password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	accessToken, refreshToken, err := h.svc.Login(creds.Email, creds.Password)
 	if err != nil {
 		// ошибка авторизации
 		http.Error(w, err.Error(), http.StatusUnauthorized)

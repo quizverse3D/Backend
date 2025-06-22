@@ -1,5 +1,8 @@
-run-user:
-	go run ./cmd/user
+run-all:
+	go run ./cmd/authgateway
+
+run-authgateway:
+	go run ./cmd/authgateway
 
 build:
-	go build -o bin/user ./cmd/user
+	go build -o bin/authgateway ./cmd/authgateway

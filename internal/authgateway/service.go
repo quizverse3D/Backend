@@ -1,4 +1,4 @@
-package user
+package authgateway
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func NewService(storage *Storage, redisClient *redis.Client) *Service {
 	return &Service{storage: storage, redisClient: redisClient}
 }
 
-func (s *Service) Register(username, password string) (string, error) {
+func (s *Service) Register(email, password string) (string, error) {
 	id := uuid.NewString()
 
 	salt := os.Getenv("PASSWORD_SALT")
@@ -32,7 +32,7 @@ func (s *Service) Register(username, password string) (string, error) {
 
 	u := User{
 		ID:            id,
-		Username:      username,
+		Email:         email,
 		Password:      string(hashed),
 		HashAlgorithm: "bcrypt",
 	}
@@ -45,8 +45,8 @@ func (s *Service) Register(username, password string) (string, error) {
 	return id, nil
 }
 
-func (s *Service) Login(username, password string) (string, string, error) {
-	u, ok := s.storage.GetUser(username)
+func (s *Service) Login(email, password string) (string, string, error) {
+	u, ok := s.storage.GetUser(email)
 	if !ok {
 		return "", "", ErrInvalidCreds
 	}

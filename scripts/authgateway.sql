@@ -1,6 +1,6 @@
-CREATE TABLE users (
+CREATE TABLE credentials (
     id UUID PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     hash_algorithm TEXT NOT NULL
 );
