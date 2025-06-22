@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"      // стандартный логгер Go для вывода в консоль.
 	"net/http" // стандартная клиент-серверная HTTP-библиотека
 	"os"
@@ -42,6 +43,13 @@ func main() {
 	mux.HandleFunc("/api/v1/validate-token", handler.ValidateToken)
 	mux.HandleFunc("/api/v1/refresh-token", handler.RefreshAccessToken)
 
-	log.Println("Authgateway REST-Service running on :8081")
-	log.Fatal(http.ListenAndServe(":8081", mux)) // если сервер не может запуститься — log.Fatal(...) завершит программу с ошибкой и выведет сообщение
+	// проверка наличия прослушиваемого REST-порта
+	if os.Getenv("AUTHGATEWAY_REST_PORT") == "" {
+		log.Fatal("AUTHGATEWAY_REST_PORT is not set")
+	}
+
+	restPort := fmt.Sprintf(":%s", os.Getenv("AUTHGATEWAY_REST_PORT"))
+
+	log.Println("Authgateway REST-Service running on " + restPort)
+	log.Fatal(http.ListenAndServe(restPort, mux)) // если сервер не может запуститься — log.Fatal(...) завершит программу с ошибкой и выведет сообщение
 }
