@@ -49,6 +49,11 @@ func main() {
 	mux.HandleFunc("/auth/api/v1/validate-token", handler.ValidateToken)
 	mux.HandleFunc("/auth/api/v1/refresh-token", handler.RefreshAccessToken)
 
+	// привязка gRPC-сервисов для маршрутизации
+	grpcUserAddr := fmt.Sprintf("%s:%s", os.Getenv("USERS_GRPC_HOST"), os.Getenv("USERS_GRPC_PORT"))
+	userRoute := authgateway.NewUserRoute(grpcUserAddr)
+	mux.Handle("/user/api/v1/", authgateway.AuthMiddleWare(authgateway.ProxyHandler([]authgateway.GRPCServiceRoute{userRoute})))
+
 	// проверка наличия прослушиваемого REST-порта
 	if os.Getenv("AUTHGATEWAY_REST_PORT") == "" {
 		log.Fatal("AUTHGATEWAY_REST_PORT is not set")
