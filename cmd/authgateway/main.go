@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/quizverse3D/Backend/internal/authgateway" // бизнес-логика
 	"github.com/quizverse3D/Backend/internal/common"      // БД
+	"github.com/streadway/amqp"
 )
 
 func main() {
@@ -40,8 +41,19 @@ func main() {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
 
-	userService := authgateway.NewService(authgateway.NewStorage(pool), redisClient) // структура со включенным в себя Storage
-	handler := authgateway.NewHandler(userService)                                   // структура-обёртка вокруг userService
+	rabbitConn, err := amqp.Dial(os.Getenv(("RABBITMQ_URL")))
+	if err != nil {
+		log.Fatalf("failed to connect to RabbitMQ: %v", err)
+	}
+	defer rabbitConn.Close()
+	rabbitChan, err := rabbitConn.Channel()
+	if err != nil {
+		log.Fatalf("failed to open RabbitMQ channel: %v", err)
+	}
+	defer rabbitChan.Close()
+
+	userService := authgateway.NewService(authgateway.NewStorage(pool), redisClient, rabbitChan) // структура со включенным в себя Storage
+	handler := authgateway.NewHandler(userService)                                               // структура-обёртка вокруг userService
 
 	// привязка url'ов к обработчикам REST-сервиса
 	mux.HandleFunc("/auth/api/v1/register", handler.Register)
