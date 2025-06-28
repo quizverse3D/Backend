@@ -9,17 +9,24 @@ import (
 
 	pb "github.com/quizverse3D/Backend/internal/pb/user"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type GRPCServiceRoute struct {
 	TargetAddr string
+	Conn       *grpc.ClientConn
 	Call       func(ctx context.Context, grpcConn *grpc.ClientConn, userId string, body []byte) (any, error)
 }
 
-func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) GRPCServiceRoute {
+func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRoute, error) {
 	// сервис USER
-	return GRPCServiceRoute{
+	conn, err := grpc.NewClient(targetAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return GRPCServiceRoute{}, err
+	}
+	route := GRPCServiceRoute{
 		TargetAddr: targetAddr,
+		Conn:       conn,
 		Call: func(ctx context.Context, conn *grpc.ClientConn, userId string, body []byte) (any, error) {
 			path := strings.TrimPrefix(ctx.Value("requestPath").(string), urlPrefix)
 			client := pb.NewUserServiceClient(conn)
@@ -38,6 +45,7 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) GRPCServiceRou
 			}
 		},
 	}
+	return route, nil
 }
 
 // Универсальный HTTP-хендлер для REST → gRPC
@@ -53,16 +61,9 @@ func ProxyHandler(grpcServiceRoute GRPCServiceRoute) http.HandlerFunc {
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
 
-		conn, err := grpc.Dial(grpcServiceRoute.TargetAddr, grpc.WithInsecure())
-		if err != nil {
-			http.Error(w, "gRPC connection error: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer conn.Close()
-
 		ctx := context.WithValue(r.Context(), "requestPath", r.URL.Path)
 
-		resp, err := grpcServiceRoute.Call(ctx, conn, userId.(string), body)
+		resp, err := grpcServiceRoute.Call(ctx, grpcServiceRoute.Conn, userId.(string), body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
