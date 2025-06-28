@@ -8,16 +8,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
+	"github.com/streadway/amqp"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
 	storage     *Storage
 	redisClient *redis.Client
+	rabbitChan  *amqp.Channel
 }
 
-func NewService(storage *Storage, redisClient *redis.Client) *Service {
-	return &Service{storage: storage, redisClient: redisClient}
+func NewService(storage *Storage, redisClient *redis.Client, rabbitChan *amqp.Channel) *Service {
+	return &Service{storage: storage, redisClient: redisClient, rabbitChan: rabbitChan}
 }
 
 func (s *Service) Register(email, password string) (string, error) {
@@ -40,6 +42,14 @@ func (s *Service) Register(email, password string) (string, error) {
 	err = s.storage.CreateAuth(u)
 	if err != nil {
 		return "", err
+	}
+
+	err = s.rabbitChan.Publish("", "user_registered", false, false, amqp.Publishing{
+		ContentType: "application/json",
+		Body:        []byte(fmt.Sprintf(`{"userId":"%s"}`, id)),
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to publish event: %w", err)
 	}
 
 	return id, nil
