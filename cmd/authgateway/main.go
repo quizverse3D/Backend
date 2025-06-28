@@ -51,8 +51,9 @@ func main() {
 
 	// привязка gRPC-сервисов для маршрутизации
 	grpcUserAddr := fmt.Sprintf("%s:%s", os.Getenv("USERS_GRPC_HOST"), os.Getenv("USERS_GRPC_PORT"))
-	userRoute := authgateway.NewUserRoute(grpcUserAddr)
-	mux.Handle("/user/api/v1/", authgateway.AuthMiddleWare(authgateway.ProxyHandler([]authgateway.GRPCServiceRoute{userRoute})))
+	userRestPrefix := "/user/api/v1/"
+	userRoute := authgateway.NewUserGrpcServiceRoute(grpcUserAddr, userRestPrefix)
+	mux.Handle(userRestPrefix, authgateway.AuthMiddleWare(authgateway.ProxyHandler(userRoute)))
 
 	// проверка наличия прослушиваемого REST-порта
 	if os.Getenv("AUTHGATEWAY_REST_PORT") == "" {
