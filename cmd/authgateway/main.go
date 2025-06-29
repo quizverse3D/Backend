@@ -13,18 +13,14 @@ import (
 )
 
 func main() {
-	// Загружаем .env файл
+	// .env
 	if err := godotenv.Load(); err != nil {
 		log.Println(".env file not found, using system env")
 	}
-	// проверка наличия секрета для JWT
-	if os.Getenv("JWT_SECRET") == "" {
-		log.Fatal("JWT_SECRET is not set")
-	}
 
-	mux := http.NewServeMux() // URL-маршрутизатор
+	mux := http.NewServeMux()
 
-	// подключаемся к БД
+	// PostgreSQL
 	pool, err := common.NewPostgresPool(
 		os.Getenv("AUTHGATEWAY_DB_USER"),
 		os.Getenv("AUTHGATEWAY_DB_PASSWORD"),
@@ -36,11 +32,13 @@ func main() {
 		log.Fatal("Failed to connect to DB:", err)
 	}
 
+	// Redis
 	redisClient, err := common.NewRedisClient()
 	if err != nil {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
 
+	// RabbitMQ
 	rabbitConn, err := amqp.Dial(os.Getenv(("RABBITMQ_URL")))
 	if err != nil {
 		log.Fatalf("failed to connect to RabbitMQ: %v", err)
@@ -52,6 +50,7 @@ func main() {
 	}
 	defer rabbitChan.Close()
 
+	// Service and Storage
 	userService := authgateway.NewService(authgateway.NewStorage(pool), redisClient, rabbitChan) // структура со включенным в себя Storage
 	handler := authgateway.NewHandler(userService)                                               // структура-обёртка вокруг userService
 
@@ -71,13 +70,8 @@ func main() {
 	defer userRoute.Conn.Close()
 	mux.Handle(userRestPrefix, authgateway.AuthMiddleWare(authgateway.ProxyHandler(userRoute)))
 
-	// проверка наличия прослушиваемого REST-порта
-	if os.Getenv("AUTHGATEWAY_REST_PORT") == "" {
-		log.Fatal("AUTHGATEWAY_REST_PORT is not set")
-	}
-
+	// REST Server listening (в конце)
 	restPort := fmt.Sprintf(":%s", os.Getenv("AUTHGATEWAY_REST_PORT"))
-
 	log.Println("Authgateway REST-Service running on " + restPort)
-	log.Fatal(http.ListenAndServe(restPort, mux)) // если сервер не может запуститься — log.Fatal(...) завершит программу с ошибкой и выведет сообщение
+	log.Fatal(http.ListenAndServe(restPort, mux))
 }

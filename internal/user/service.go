@@ -15,3 +15,7 @@ func NewService(storage *Storage) *Service {
 func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 	return s.storage.GetUserByID(ctx, userID)
 }
+
+func (s *Service) CreateUser(ctx context.Context, u *User) error {
+	return s.storage.CreateUser(ctx, u)
+}

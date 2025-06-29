@@ -21,6 +21,18 @@ func NewConsumer(channel *amqp.Channel, queue string, handler func(amqp.Delivery
 	}
 }
 
+func (c *Consumer) DeclareQueue() error {
+	_, err := c.channel.QueueDeclare(
+		c.queue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	return err
+}
+
 func (c *Consumer) Listen(ctx context.Context) error {
 	msgs, err := c.channel.Consume(
 		c.queue,
