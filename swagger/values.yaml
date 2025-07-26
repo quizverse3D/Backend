@@ -1,0 +1,21 @@
+replicaCount: 1
+
+image:
+  repository: swaggerapi/swagger-ui
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 80
+
+env:
+  SWAGGER_JSON: "/openapi/common.yaml"
+
+extraVolumeMounts:
+  - name: openapi-volume
+    mountPath: /openapi
+extraVolumes:
+  - name: openapi-volume
+    configMap:
+      name: swagger-configmap
