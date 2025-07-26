@@ -29,6 +29,7 @@ backend/
 │   └── ai_service/
 ├── deployments/        # Kubernetes манифесты
 ├── scripts/            # Миграции, тестовые данные, вспомогательные скрипты
+├── swagger/            # helm-чарт swagger с описанием модели в common.yaml
 ├── docker-compose.yml  # Локальная сборка
 ├── Makefile            # Упрощённый запуск и сборка
 ├── go.mod / go.sum     # Go-модули
