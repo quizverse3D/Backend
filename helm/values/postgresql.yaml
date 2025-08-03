@@ -1,0 +1,16 @@
+primary:
+  persistence:
+    enabled: false
+  service:
+    port: 5432
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 150m
+    limits:
+      memory: 256Mi
+      cpu: 300m
+
+auth:
+  postgresPassword: password
+  database: db
