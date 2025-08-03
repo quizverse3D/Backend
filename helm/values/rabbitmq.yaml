@@ -1,0 +1,18 @@
+auth:
+  username: rabbituser
+  password: rabbitpswd
+  erlangCookie: "SUPERSECRETCOOKIE"
+
+resources:
+  limits:
+    memory: 256Mi
+    cpu: 250m
+  requests:
+    memory: 128Mi
+    cpu: 125m
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  failureThreshold: 10

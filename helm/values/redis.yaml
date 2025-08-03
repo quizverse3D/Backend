@@ -1,0 +1,9 @@
+auth:
+  enabled: true
+  password: password
+architecture: standalone
+master:
+  persistence:
+    enabled: false
+replica:
+  replicaCount: 0
