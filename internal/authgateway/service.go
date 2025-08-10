@@ -22,7 +22,7 @@ func NewService(storage *Storage, redisClient *redis.Client, rabbitChan *amqp.Ch
 	return &Service{storage: storage, redisClient: redisClient, rabbitChan: rabbitChan}
 }
 
-func (s *Service) Register(email, password string) (string, error) {
+func (s *Service) Register(email, password, username string) (string, error) {
 	id := uuid.NewString()
 
 	salt := os.Getenv("PASSWORD_SALT")
@@ -46,7 +46,7 @@ func (s *Service) Register(email, password string) (string, error) {
 
 	err = s.rabbitChan.Publish("", "user_registered", false, false, amqp.Publishing{
 		ContentType: "application/json",
-		Body:        []byte(fmt.Sprintf(`{"userId":"%s"}`, id)),
+		Body:        []byte(fmt.Sprintf(`{"userId":"%s","userName":"%s"}`, id, username)),
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to publish event: %w", err)

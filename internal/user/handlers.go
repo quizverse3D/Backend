@@ -14,7 +14,8 @@ import (
 func UserRegisteredHandler(service *Service) func(amqp.Delivery) {
 	return func(msg amqp.Delivery) {
 		var payload struct {
-			UserID string `json:"userId"`
+			UserID   string `json:"userId"`
+			UserName string `json:"userName"`
 		}
 
 		if err := json.Unmarshal(msg.Body, &payload); err != nil {
@@ -25,7 +26,7 @@ func UserRegisteredHandler(service *Service) func(amqp.Delivery) {
 
 		user := &User{
 			ID:       uuid.MustParse(payload.UserID),
-			Username: "test",
+			Username: payload.UserName,
 		}
 
 		if err := service.CreateUser(context.Background(), user); err != nil {
