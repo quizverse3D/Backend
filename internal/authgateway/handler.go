@@ -16,6 +16,7 @@ func NewHandler(svc *Service) *Handler {
 type Credentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	UserName string `json:"username"` // только для передачи по шине Users
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +27,12 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if creds.Email == "" || creds.Password == "" {
-		http.Error(w, "email and password must be provided", http.StatusBadRequest)
+	if creds.Email == "" || creds.Password == "" || creds.UserName == "" {
+		http.Error(w, "email, password, username must be provided", http.StatusBadRequest)
 		return
 	}
 
-	_, err := h.svc.Register(creds.Email, creds.Password)
+	_, err := h.svc.Register(creds.Email, creds.Password, creds.UserName)
 	if err != nil {
 		// ошибка регистрации
 		http.Error(w, err.Error(), http.StatusBadRequest)

@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -18,4 +20,8 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 
 func (s *Service) CreateUser(ctx context.Context, u *User) error {
 	return s.storage.CreateUser(ctx, u)
+}
+
+func (s *Service) GetUserClientParamsByUuid(ctx context.Context, userUuid uuid.UUID) (*ClientParams, error) {
+	return s.storage.GetUserClientParamsByUuid(ctx, userUuid)
 }
