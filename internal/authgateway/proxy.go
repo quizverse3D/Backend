@@ -39,6 +39,13 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 				}
 				req.UserId = userId
 				return client.GetUser(ctx, &req)
+			case "params":
+				var req pb.GetUserClientParamsRequest
+				if err := json.Unmarshal(body, &req); err != nil {
+					return nil, err
+				}
+				req.UserUuid = userId
+				return client.GetUserClientParams(ctx, &req)
 
 			default:
 				return nil, errors.New("path not found: " + path)

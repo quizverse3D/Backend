@@ -6,6 +6,7 @@ option go_package = "internal/pb/user;user";
 
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetUserClientParams(GetUserClientParamsRequest) returns (GetUserClientParamsResponse);
 }
 
 message GetUserRequest {
@@ -15,4 +16,15 @@ message GetUserRequest {
 message GetUserResponse {
   string id = 1;
   string username = 2;
+}
+
+message GetUserClientParamsRequest {
+  string user_uuid = 1;
+}
+
+message GetUserClientParamsResponse {
+  string user_uuid = 1;
+  string lang_code = 2;
+  int32 sound_volume = 3;
+  bool is_game_sound_enabled = 4;
 }
