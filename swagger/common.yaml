@@ -17,6 +17,7 @@ paths:
               required:
                 - email
                 - password
+                - username
               properties:
                 email:
                   type: string
@@ -24,6 +25,8 @@ paths:
                 password:
                   type: string
                   format: password
+                username:
+                  type: string
       responses:
         '201':
           description: Registered successfully
@@ -140,6 +143,42 @@ paths:
           description: Unauthorized (invalid or missing token)
         '404':
           description: Пользователь не найден
+  /user/api/v1/params:
+    get:
+      summary: Получить текущие облачные параметры клиента пользователя
+      tags:
+        - Users Service
+      description: Возвращает текущие клиенсткие параметры пользователя (язык, громкость...).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Параметры клиента
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  useruuid:
+                    type: string
+                    format: uuid
+                  langcode:
+                    type: string
+                  soundvolume:
+                    type: integer
+                  isgamesoundenabled:
+                    type: boolean
+        '401':
+          description: Unauthorized (invalid or missing token)
+        '404':
+          description: Параметры пользователя не найдены
 components:
   securitySchemes:
     bearerAuth:
