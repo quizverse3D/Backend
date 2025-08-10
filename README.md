@@ -28,6 +28,7 @@ backend/
 ├── python/             # Python-сервисы (нейронки, ML, генерация паков вопросов)
 │   └── ai_service/
 ├── deployments/        # Kubernetes манифесты
+├── helm/               # Собственные helm-чарты и values для готовых
 ├── scripts/            # Миграции, тестовые данные, вспомогательные скрипты
 ├── swagger/            # helm-чарт swagger с описанием модели в common.yaml
 ├── docker-compose.yml  # Локальная сборка
