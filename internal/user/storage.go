@@ -27,6 +27,10 @@ func (s *Storage) GetUserByID(ctx context.Context, id string) (*User, error) {
 }
 
 func (s *Storage) CreateUser(ctx context.Context, u *User) error {
-	_, err := s.pool.Exec(ctx, `INSERT INTO users (id, username) VALUES ($1, $2)`, u.ID, u.Username)
-	return err
+	_, usersErr := s.pool.Exec(ctx, `INSERT INTO users (id, username) VALUES ($1, $2)`, u.ID, u.Username)
+	if usersErr != nil {
+		return usersErr
+	}
+	_, paramsErr := s.pool.Exec(ctx, `INSERT INTO params (user_uuid) VALUES ($1)`, u.ID)
+	return paramsErr
 }
