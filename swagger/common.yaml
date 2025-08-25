@@ -119,13 +119,6 @@ paths:
       description: Возвращает информацию о текущем пользователе по accessToken'у.
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties: {}
       responses:
         '200':
           description: Информация о пользователе
@@ -151,13 +144,6 @@ paths:
       description: Возвращает текущие клиенсткие параметры пользователя (язык, громкость...).
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties: {}
       responses:
         '200':
           description: Параметры клиента
