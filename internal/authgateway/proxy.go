@@ -37,9 +37,6 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 				switch method {
 				case http.MethodGet:
 					var req pb.GetUserRequest
-					if err := json.Unmarshal(body, &req); err != nil {
-						return nil, err
-					}
 					req.UserId = userId
 					return client.GetUser(ctx, &req)
 
@@ -51,9 +48,6 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 				switch method {
 				case http.MethodGet:
 					var req pb.GetUserClientParamsRequest
-					if err := json.Unmarshal(body, &req); err != nil {
-						return nil, err
-					}
 					req.UserUuid = userId
 					return client.GetUserClientParams(ctx, &req)
 				default:
