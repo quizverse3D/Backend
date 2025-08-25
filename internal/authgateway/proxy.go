@@ -29,23 +29,36 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 		Conn:       conn,
 		Call: func(ctx context.Context, conn *grpc.ClientConn, userId string, body []byte) (any, error) {
 			path := strings.TrimPrefix(ctx.Value("requestPath").(string), urlPrefix)
+			method := ctx.Value("requestMethod").(string)
 			client := pb.NewUserServiceClient(conn)
 
 			switch path {
 			case "me":
-				var req pb.GetUserRequest
-				if err := json.Unmarshal(body, &req); err != nil {
-					return nil, err
+				switch method {
+				case http.MethodGet:
+					var req pb.GetUserRequest
+					if err := json.Unmarshal(body, &req); err != nil {
+						return nil, err
+					}
+					req.UserId = userId
+					return client.GetUser(ctx, &req)
+
+				default:
+					return nil, errors.New("unsupported method")
 				}
-				req.UserId = userId
-				return client.GetUser(ctx, &req)
+
 			case "params":
-				var req pb.GetUserClientParamsRequest
-				if err := json.Unmarshal(body, &req); err != nil {
-					return nil, err
+				switch method {
+				case http.MethodGet:
+					var req pb.GetUserClientParamsRequest
+					if err := json.Unmarshal(body, &req); err != nil {
+						return nil, err
+					}
+					req.UserUuid = userId
+					return client.GetUserClientParams(ctx, &req)
+				default:
+					return nil, errors.New("unsupported method")
 				}
-				req.UserUuid = userId
-				return client.GetUserClientParams(ctx, &req)
 
 			default:
 				return nil, errors.New("path not found: " + path)
@@ -69,6 +82,7 @@ func ProxyHandler(grpcServiceRoute GRPCServiceRoute) http.HandlerFunc {
 		r.Body.Read(body)
 
 		ctx := context.WithValue(r.Context(), "requestPath", r.URL.Path)
+		ctx = context.WithValue(ctx, "requestMethod", r.Method)
 
 		resp, err := grpcServiceRoute.Call(ctx, grpcServiceRoute.Conn, userId.(string), body)
 		if err != nil {
