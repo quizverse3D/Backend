@@ -4,9 +4,12 @@ package user;
 
 option go_package = "internal/pb/user;user";
 
+import "google/protobuf/wrappers.proto";
+
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc GetUserClientParams(GetUserClientParamsRequest) returns (GetUserClientParamsResponse);
+  rpc SetUserClientParams(SetUserClientParamsRequest) returns (SetUserClientParamsResponse);
 }
 
 message GetUserRequest {
@@ -24,7 +27,24 @@ message GetUserClientParamsRequest {
 
 message GetUserClientParamsResponse {
   string user_uuid = 1;
+
   string lang_code = 2;
-  int32 sound_volume = 3;
-  bool is_game_sound_enabled = 4;
+  optional int32 sound_volume = 3;
+  optional bool is_game_sound_enabled = 4;
+}
+
+message SetUserClientParamsRequest {
+  string user_uuid = 1;
+  // применяем "обёртку", так как состав полей опционален
+  google.protobuf.StringValue lang_code = 2;
+  google.protobuf.Int32Value sound_volume = 3;
+  google.protobuf.BoolValue is_game_sound_enabled = 4;
+}
+
+message SetUserClientParamsResponse {
+  string user_uuid = 1;
+
+  string lang_code = 2;
+  optional int32 sound_volume = 3;
+  optional bool is_game_sound_enabled = 4;
 }

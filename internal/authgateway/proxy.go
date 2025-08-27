@@ -50,6 +50,14 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 					var req pb.GetUserClientParamsRequest
 					req.UserUuid = userId
 					return client.GetUserClientParams(ctx, &req)
+				case http.MethodPost:
+					var req pb.SetUserClientParamsRequest
+					if err := json.Unmarshal(body, &req); err != nil {
+						return nil, err
+					}
+					req.UserUuid = userId
+					return client.SetUserClientParams(ctx, &req)
+
 				default:
 					return nil, errors.New("unsupported method")
 				}

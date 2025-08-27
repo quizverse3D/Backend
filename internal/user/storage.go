@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -46,4 +48,43 @@ func (s *Storage) GetUserClientParamsByUuid(ctx context.Context, uuid uuid.UUID)
 	}
 
 	return &p, nil
+}
+
+func (s *Storage) SetUserClientParamsByUuid(ctx context.Context, uuid uuid.UUID, langCode *string,
+	soundVolume *int32,
+	isGameSoundEnabled *bool) (*ClientParams, error) {
+
+	setParts := []string{}
+	args := []interface{}{}
+	argPos := 1
+
+	if langCode != nil {
+		setParts = append(setParts, fmt.Sprintf("lang_code = $%d", argPos))
+		args = append(args, *langCode)
+		argPos++
+	}
+	if soundVolume != nil {
+		setParts = append(setParts, fmt.Sprintf("sound_volume = $%d", argPos))
+		args = append(args, *soundVolume)
+		argPos++
+	}
+	if isGameSoundEnabled != nil {
+		setParts = append(setParts, fmt.Sprintf("game_sound_enabled = $%d", argPos))
+		args = append(args, *isGameSoundEnabled)
+		argPos++
+	}
+
+	if len(setParts) == 0 {
+		return s.GetUserClientParamsByUuid(ctx, uuid)
+	}
+
+	query := fmt.Sprintf("UPDATE params SET %s WHERE user_uuid = $%d", strings.Join(setParts, ", "), argPos)
+	args = append(args, uuid)
+
+	_, err := s.pool.Exec(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetUserClientParamsByUuid(ctx, uuid)
 }

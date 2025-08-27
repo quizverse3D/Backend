@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/google/uuid"
@@ -40,7 +41,44 @@ func (s *Server) GetUserClientParams(ctx context.Context, req *pb.GetUserClientP
 	return &pb.GetUserClientParamsResponse{
 		UserUuid:           params.UserUuid.String(),
 		LangCode:           params.LangCode,
-		SoundVolume:        int32(params.SoundVolume),
-		IsGameSoundEnabled: params.IsGameSoundEnabled,
+		SoundVolume:        &params.SoundVolume,
+		IsGameSoundEnabled: &params.IsGameSoundEnabled,
+	}, nil
+}
+
+func (s *Server) SetUserClientParams(ctx context.Context, req *pb.SetUserClientParamsRequest) (*pb.SetUserClientParamsResponse, error) {
+	// parse pb
+	userUuid, err := uuid.Parse(req.GetUserUuid())
+	if err != nil {
+		return nil, fmt.Errorf("invalid user_uuid: %w", err)
+	}
+	// * to disable goland type auto default values
+	var langCode *string
+	if req.LangCode != nil {
+		langCode = &req.LangCode.Value
+	}
+
+	var soundVolume *int32
+	if req.SoundVolume != nil {
+		soundVolume = &req.SoundVolume.Value
+	}
+
+	var isGameSoundEnabled *bool
+	if req.IsGameSoundEnabled != nil {
+		isGameSoundEnabled = &req.IsGameSoundEnabled.Value
+	}
+
+	// call service
+	params, err := s.svc.SetUserClientParamsByUuid(ctx, userUuid, langCode, soundVolume, isGameSoundEnabled)
+	if err != nil {
+		log.Printf("failed to set user client params: %v", err)
+		return nil, err
+	}
+
+	return &pb.SetUserClientParamsResponse{
+		UserUuid:           params.UserUuid.String(),
+		LangCode:           params.LangCode,
+		SoundVolume:        &params.SoundVolume,
+		IsGameSoundEnabled: &params.IsGameSoundEnabled,
 	}, nil
 }

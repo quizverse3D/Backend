@@ -10,6 +10,6 @@ type User struct {
 type ClientParams struct {
 	UserUuid           uuid.UUID
 	LangCode           string
-	SoundVolume        int16
+	SoundVolume        int32
 	IsGameSoundEnabled bool
 }
