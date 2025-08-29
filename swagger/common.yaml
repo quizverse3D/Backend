@@ -28,9 +28,9 @@ paths:
                 username:
                   type: string
       responses:
-        '201':
+        "201":
           description: Registered successfully
-        '400':
+        "400":
           description: Invalid input or registration error
 
   /auth/api/v1/login:
@@ -55,15 +55,15 @@ paths:
                   type: string
                   format: password
       responses:
-        '200':
+        "200":
           description: Access token returned
           content:
             text/plain:
               schema:
                 type: string
-        '400':
+        "400":
           description: Invalid input
-        '401':
+        "401":
           description: Unauthorized
 
   /auth/api/v1/validate-token:
@@ -83,7 +83,7 @@ paths:
                 accessToken:
                   type: string
       responses:
-        '200':
+        "200":
           description: Token is valid
           content:
             application/json:
@@ -92,9 +92,9 @@ paths:
                 properties:
                   userId:
                     type: string
-        '400':
+        "400":
           description: Invalid input
-        '401':
+        "401":
           description: Unauthorized
 
   /auth/api/v1/refresh-token:
@@ -103,14 +103,15 @@ paths:
       tags:
         - Authgateway Service
       responses:
-        '200':
+        "200":
           description: New access token issued
           content:
             text/plain:
               schema:
                 type: string
-        '401':
+        "401":
           description: Refresh token not provided or invalid
+
   /user/api/v1/me:
     get:
       summary: Получить информацию о пользователе текущей сессии
@@ -120,7 +121,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Информация о пользователе
           content:
             application/json:
@@ -132,39 +133,80 @@ paths:
                     format: uuid
                   username:
                     type: string
-        '401':
+        "401":
           description: Unauthorized (invalid or missing token)
-        '404':
+        "404":
           description: Пользователь не найден
+
   /user/api/v1/params:
     get:
       summary: Получить текущие облачные параметры клиента пользователя
+      description: Возвращает текущие клиенсткие параметры пользователя (язык, громкость...).
       tags:
         - Users Service
-      description: Возвращает текущие клиенсткие параметры пользователя (язык, громкость...).
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Параметры клиента
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  useruuid:
+                  user_uuid:
                     type: string
                     format: uuid
-                  langcode:
+                  lang_code:
                     type: string
-                  soundvolume:
+                  sound_volume:
                     type: integer
-                  isgamesoundenabled:
+                  is_game_sound_enabled:
                     type: boolean
-        '401':
+        "401":
           description: Unauthorized (invalid or missing token)
-        '404':
+        "404":
           description: Параметры пользователя не найдены
+    post:
+      summary: Сохранить параметры клиента в облако
+      description: Можно передавать только изменённые параметры
+      tags:
+        - Users Service
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lang_code:
+                  type: string
+                sound_volume:
+                  type: integer
+                is_game_sound_enabled:
+                  type: boolean
+      responses:
+        "200":
+          description: Активные параметры клиента
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_uuid:
+                    type: string
+                    format: uuid
+                  lang_code:
+                    type: string
+                  sound_volume:
+                    type: integer
+                  is_game_sound_enabled:
+                    type: boolean
+        "401":
+          description: Unauthorized (invalid or missing token)
+
 components:
   securitySchemes:
     bearerAuth:
