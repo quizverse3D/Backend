@@ -59,6 +59,7 @@ func main() {
 	mux.HandleFunc("/auth/api/v1/login", handler.Login)
 	mux.HandleFunc("/auth/api/v1/validate-token", handler.ValidateToken)
 	mux.HandleFunc("/auth/api/v1/refresh-token", handler.RefreshAccessToken)
+	mux.HandleFunc("/auth/api/v1/update-password", handler.UpdatePassword)
 
 	// привязка gRPC-сервисов для маршрутизации
 	grpcUserAddr := fmt.Sprintf("%s:%s", os.Getenv("USERS_GRPC_HOST"), os.Getenv("USERS_GRPC_PORT"))

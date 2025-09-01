@@ -109,3 +109,31 @@ func (s *Service) RefreshAccessToken(refreshToken string) (string, error) {
 
 	return GenerateAccessToken(userID)
 }
+
+func (s *Service) UpdatePassword(uuid, newPassword, oldPassword string) error {
+	u, err := s.storage.GetCredInfoByUuid(uuid)
+	if err != nil {
+		return err
+	}
+
+	salt := os.Getenv("PASSWORD_SALT")
+	combined := oldPassword + salt
+
+	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(combined))
+	if err != nil {
+		return ErrInvalidPassword
+	}
+
+	combined = newPassword + salt
+	newHashed, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	err = s.storage.UpdatePasswordForUuid(uuid, string(newHashed), "bcrypt")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

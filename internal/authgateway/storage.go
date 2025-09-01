@@ -42,3 +42,25 @@ func (s *Storage) GetAuth(email string) (Auth, bool) {
 
 	return u, true
 }
+
+func (s *Storage) GetCredInfoByUuid(uuid string) (Auth, error) {
+	row := s.db.QueryRow(context.Background(), "SELECT id, email, password, hash_algorithm FROM credentials WHERE id = $1", uuid)
+
+	var u Auth
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.HashAlgorithm)
+	if err != nil {
+		return Auth{}, err
+	}
+
+	return u, nil
+}
+
+func (s *Storage) UpdatePasswordForUuid(uuid, password, hashAlgorithm string) error {
+	_, err := s.db.Exec(context.Background(), "UPDATE credentials SET password = $1, hash_algorithm = $2 WHERE id = $3", password, hashAlgorithm, uuid)
+
+	if err == nil {
+		return nil
+	}
+
+	return err
+}

@@ -3,6 +3,7 @@ package authgateway
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type Handler struct {
@@ -133,4 +134,50 @@ func (h *Handler) RefreshAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(newAccessToken))
+}
+
+func (h *Handler) UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "missing token", http.StatusUnauthorized)
+		return
+	}
+
+	userUuid, err := ValidateAccessToken(strings.TrimPrefix(token, "Bearer "))
+	if err != nil {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	var payload struct {
+		NewPassword string `json:"new_password"`
+		OldPassword string `json:"old_password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid input", http.StatusBadRequest)
+		return
+	}
+
+	if payload.OldPassword == "" || payload.NewPassword == "" {
+		http.Error(w, "old_password and new_password must be provided", http.StatusBadRequest)
+		return
+	}
+
+	err = h.svc.UpdatePassword(userUuid, payload.NewPassword, payload.OldPassword)
+	if err == ErrInvalidPassword {
+		http.Error(w, "old_password is invalid", http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
