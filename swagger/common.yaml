@@ -97,6 +97,35 @@ paths:
         "401":
           description: Unauthorized
 
+  /auth/api/v1/update-password:
+    post:
+      summary: Сменить пароль
+      security:
+        - bearerAuth: []
+      tags:
+        - Authgateway Service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - old_password
+                - new_password
+              properties:
+                old_password:
+                  type: string
+                new_password:
+                  type: string
+      responses:
+        "204":
+          description: Пароль успешно изменён
+        "400":
+          description: Текущий пароль некорректный или не все обязательные параметры переданы
+        "500":
+          description: Внутренняя ошибка сервера
+
   /auth/api/v1/refresh-token:
     post:
       summary: Получить новый access-токен на основе refresh-токена
