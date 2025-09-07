@@ -236,6 +236,67 @@ paths:
         "401":
           description: Unauthorized (invalid or missing token)
 
+  /room/api/v1/room:
+    put:
+      summary: Создать новую комнату
+      description: Создаёт на сервере новую комнату с заданными параметрами. Пароль можно не указывать. Кол-во игроков от 1 до 32 включительно.
+      tags:
+        - Rooms Service
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - max_players
+                - is_public
+              properties:
+                name:
+                  type: string
+                  description: название комнаты
+                password:
+                  type: string
+                  description: пароль для подключения к комнате
+                max_players:
+                  type: integer
+                  description: максимальное кол-во игроков (1-32)
+                is_public:
+                  type: boolean
+                  description: доступен ли в общем списке
+      responses:
+        "200":
+          description: Параметры успешно созданной комнаты
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: id комнаты
+                  name:
+                    type: string
+                    description: название комнаты
+                  max_players:
+                    type: integer
+                    description: максимальное кол-во игроков
+                  is_public:
+                    type: boolean
+                    description: доступен ли в общем списке
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Время создания записи в формате ISO 8601
+        "401":
+          description: Unauthorized (invalid or missing token)
+        "404":
+          description: Invalid creation parameters
+
 components:
   securitySchemes:
     bearerAuth:
