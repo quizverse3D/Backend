@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"strings"
 
-	pb "github.com/quizverse3D/Backend/internal/pb/user"
+	roomPb "github.com/quizverse3D/Backend/internal/pb/room"
+	userPb "github.com/quizverse3D/Backend/internal/pb/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -30,13 +31,13 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 		Call: func(ctx context.Context, conn *grpc.ClientConn, userId string, body []byte) (any, error) {
 			path := strings.TrimPrefix(ctx.Value("requestPath").(string), urlPrefix)
 			method := ctx.Value("requestMethod").(string)
-			client := pb.NewUserServiceClient(conn)
+			client := userPb.NewUserServiceClient(conn)
 
 			switch path {
 			case "me":
 				switch method {
 				case http.MethodGet:
-					var req pb.GetUserRequest
+					var req userPb.GetUserRequest
 					req.UserId = userId
 					return client.GetUser(ctx, &req)
 
@@ -47,16 +48,54 @@ func NewUserGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 			case "params":
 				switch method {
 				case http.MethodGet:
-					var req pb.GetUserClientParamsRequest
+					var req userPb.GetUserClientParamsRequest
 					req.UserUuid = userId
 					return client.GetUserClientParams(ctx, &req)
 				case http.MethodPost:
-					var req pb.SetUserClientParamsRequest
+					var req userPb.SetUserClientParamsRequest
 					if err := json.Unmarshal(body, &req); err != nil {
 						return nil, err
 					}
 					req.UserUuid = userId
 					return client.SetUserClientParams(ctx, &req)
+
+				default:
+					return nil, errors.New("unsupported method")
+				}
+
+			default:
+				return nil, errors.New("path not found: " + path)
+			}
+		},
+	}
+	return route, nil
+}
+
+func NewRoomGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRoute, error) {
+	// сервис ROOM
+	conn, err := grpc.NewClient(targetAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return GRPCServiceRoute{}, err
+	}
+
+	route := GRPCServiceRoute{
+		TargetAddr: targetAddr,
+		Conn:       conn,
+		Call: func(ctx context.Context, conn *grpc.ClientConn, userId string, body []byte) (any, error) {
+			path := strings.TrimPrefix(ctx.Value("requestPath").(string), urlPrefix)
+			method := ctx.Value("requestMethod").(string)
+			client := roomPb.NewRoomServiceClient(conn)
+
+			switch path {
+			case "room":
+				switch method {
+				case http.MethodPut:
+					var req roomPb.CreateRoomParamsRequest
+					if err := json.Unmarshal(body, &req); err != nil {
+						return nil, err
+					}
+					req.UserUuid = userId
+					return client.CreateRoom(ctx, &req)
 
 				default:
 					return nil, errors.New("unsupported method")

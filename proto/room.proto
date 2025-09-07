@@ -4,4 +4,24 @@ package room;
 
 option go_package = "internal/pb/room;room";
 
-service RoomService {}
+import "google/protobuf/timestamp.proto";
+
+service RoomService {
+    rpc CreateRoom(CreateRoomParamsRequest) returns (CreateRoomParamsResponse);
+}
+
+message CreateRoomParamsRequest {
+    string user_uuid = 1;
+    string name = 2;
+    optional string password = 3;
+    int32 max_players = 4;
+    bool is_public = 5;
+}
+
+message CreateRoomParamsResponse {
+    string id = 1;
+    string name = 2;
+    int32 max_players = 3;
+    bool is_public = 4;
+    google.protobuf.Timestamp created_at = 5;
+}

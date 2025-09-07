@@ -71,6 +71,15 @@ func main() {
 	defer userRoute.Conn.Close()
 	mux.Handle(userRestPrefix, authgateway.AuthMiddleWare(authgateway.ProxyHandler(userRoute)))
 
+	grpcRoomAddr := fmt.Sprintf("%s:%s", os.Getenv("ROOMS_GRPC_HOST"), os.Getenv("ROOMS_GRPC_PORT"))
+	roomRestPrefix := "/room/api/v1/"
+	roomRoute, err := authgateway.NewRoomGrpcServiceRoute(grpcRoomAddr, roomRestPrefix)
+	if err != nil {
+		log.Fatalf("failed to create roomRoute: %v", err)
+	}
+	defer roomRoute.Conn.Close()
+	mux.Handle(roomRestPrefix, authgateway.AuthMiddleWare(authgateway.ProxyHandler(roomRoute)))
+
 	// REST Server listening (в конце)
 	restPort := fmt.Sprintf(":%s", os.Getenv("AUTHGATEWAY_REST_PORT"))
 	log.Println("Authgateway REST-Service running on " + restPort)
