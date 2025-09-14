@@ -21,7 +21,15 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 }
 
 func (s *Service) CreateUser(ctx context.Context, u *User) error {
-	return s.storage.CreateUser(ctx, u)
+	err := s.storage.CreateUser(ctx, u)
+	if err != nil {
+		return err
+	}
+	err = s.SyncUsernamesToRedis(ctx, &u.ID)
+	if err != nil {
+		return ErrUsernameRedisSaveError
+	}
+	return nil
 }
 
 func (s *Service) GetUserClientParamsByUuid(ctx context.Context, userUuid uuid.UUID) (*ClientParams, error) {
