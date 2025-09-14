@@ -51,8 +51,8 @@ func main() {
 	defer rabbitChan.Close()
 
 	// Service and Storage
-	userService := authgateway.NewService(authgateway.NewStorage(pool), redisClient, rabbitChan) // структура со включенным в себя Storage
-	handler := authgateway.NewHandler(userService)                                               // структура-обёртка вокруг userService
+	authService := authgateway.NewService(authgateway.NewStorage(pool), redisClient, rabbitChan) // структура со включенным в себя Storage
+	handler := authgateway.NewHandler(authService)                                               // структура-обёртка вокруг authService
 
 	// привязка url'ов к обработчикам REST-сервиса
 	mux.HandleFunc("/auth/api/v1/register", handler.Register)
