@@ -78,13 +78,15 @@ func (s *Storage) SetUserClientParamsByUuid(ctx context.Context, uuid uuid.UUID,
 		return s.GetUserClientParamsByUuid(ctx, uuid)
 	}
 
-	query := fmt.Sprintf("UPDATE params SET %s WHERE user_uuid = $%d", strings.Join(setParts, ", "), argPos)
+	query := fmt.Sprintf("UPDATE params SET %s WHERE user_uuid = $%d RETURNING user_uuid, lang_code, sound_volume, game_sound_enabled", strings.Join(setParts, ", "), argPos)
 	args = append(args, uuid)
+	row := s.pool.QueryRow(ctx, query, args...)
 
-	_, err := s.pool.Exec(ctx, query, args...)
+	var clientParams ClientParams
+	err := row.Scan(&clientParams.UserUuid, &clientParams.LangCode, &clientParams.SoundVolume, &clientParams.IsGameSoundEnabled)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.GetUserClientParamsByUuid(ctx, uuid)
+	return &clientParams, nil
 }
