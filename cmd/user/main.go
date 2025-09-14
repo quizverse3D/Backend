@@ -32,6 +32,12 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	// Redis
+	redisClient, err := common.NewRedisClient()
+	if err != nil {
+		log.Fatal("Failed to connect to Redis:", err)
+	}
+
 	// RabbitMQ
 	rabbitConn, err := amqp.Dial(os.Getenv(("RABBITMQ_URL")))
 	if err != nil {
@@ -46,7 +52,7 @@ func main() {
 
 	// Service and Storage
 	storage := user.NewStorage(pool)
-	service := user.NewService(storage)
+	service := user.NewService(storage, redisClient)
 
 	// gRPC Server
 	grpcServer := grpc.NewServer()
@@ -69,6 +75,12 @@ func main() {
 		if err := c.Listen(context.Background()); err != nil {
 			log.Fatalf("failed to start consumer: %v", err)
 		}
+	}
+
+	// автовыгрузка username'ов пользователей в redis
+	err = service.SyncUsernamesToRedis(context.Background(), nil)
+	if err != nil {
+		log.Fatalf("failed to save usernames to redis: %v", err)
 	}
 
 	// Выполняется в конце, прослушивание gRPC

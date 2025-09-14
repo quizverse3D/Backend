@@ -29,6 +29,24 @@ func (s *Storage) GetUserByID(ctx context.Context, id string) (*User, error) {
 	return &u, nil
 }
 
+func (s *Storage) GetAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := s.pool.Query(ctx, `SELECT id, username FROM users`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Username); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
 func (s *Storage) CreateUser(ctx context.Context, u *User) error {
 	_, usersErr := s.pool.Exec(ctx, `INSERT INTO users (id, username) VALUES ($1, $2)`, u.ID, u.Username)
 	if usersErr != nil {
