@@ -21,7 +21,9 @@ message CreateRoomParamsRequest {
 message CreateRoomParamsResponse {
     string id = 1;
     string name = 2;
-    int32 max_players = 3;
-    bool is_public = 4;
-    google.protobuf.Timestamp created_at = 5;
+    string owner_id = 3;
+    string owner_name = 4;
+    int32 max_players = 5;
+    bool is_public = 6;
+    google.protobuf.Timestamp created_at = 7;
 }

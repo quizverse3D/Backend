@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	pb "github.com/quizverse3D/Backend/internal/pb/room"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Server struct {
@@ -26,12 +27,18 @@ func (s *Server) CreateRoom(ctx context.Context, req *pb.CreateRoomParamsRequest
 	}
 
 	// call service
-	// TODO: после реализации метода получения комнаты по uuid, возвращать результат создания
-	_, err = s.svc.CreateRoom(ctx, userUuid, &req.Name, req.Password, &req.MaxPlayers, &req.IsPublic)
+	room, err := s.svc.CreateRoom(ctx, userUuid, &req.Name, req.Password, &req.MaxPlayers, &req.IsPublic)
 	if err != nil {
 		log.Printf("failed to create room: %v", err)
 		return nil, err
 	}
 
-	return &pb.CreateRoomParamsResponse{}, nil
+	return &pb.CreateRoomParamsResponse{
+		Id:         room.ID.String(),
+		Name:       room.Name,
+		OwnerId:    room.OwnerUuid.String(),
+		OwnerName:  room.OwnerName,
+		MaxPlayers: room.MaxPlayers,
+		IsPublic:   room.IsPublic,
+		CreatedAt:  timestamppb.New(*room.CreatedAt)}, nil
 }

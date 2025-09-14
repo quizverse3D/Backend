@@ -9,6 +9,7 @@ import (
 type Room struct {
 	ID           uuid.UUID
 	OwnerUuid    uuid.UUID
+	OwnerName    string
 	Name         string
 	PasswordHash *string
 	MaxPlayers   int32

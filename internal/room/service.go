@@ -5,15 +5,17 @@ import (
 	"os"
 
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
-	storage *Storage
+	storage     *Storage
+	redisClient *redis.Client
 }
 
-func NewService(storage *Storage) *Service {
-	return &Service{storage: storage}
+func NewService(storage *Storage, redisClient *redis.Client) *Service {
+	return &Service{storage: storage, redisClient: redisClient}
 }
 
 func (s *Service) CreateRoom(ctx context.Context, userUuid uuid.UUID, name *string, password *string, maxPlayers *int32, isPublic *bool) (*Room, error) {
@@ -38,5 +40,12 @@ func (s *Service) CreateRoom(ctx context.Context, userUuid uuid.UUID, name *stri
 		passwordHash = &hashString
 	}
 
-	return nil, s.storage.CreateRoom(ctx, Room{OwnerUuid: userUuid, Name: *name, PasswordHash: passwordHash, MaxPlayers: *maxPlayers, IsPublic: *isPublic})
+	room, err := s.storage.CreateRoom(ctx, Room{OwnerUuid: userUuid, Name: *name, PasswordHash: passwordHash, MaxPlayers: *maxPlayers, IsPublic: *isPublic})
+	if err != nil {
+		return nil, err
+	}
+	ownerUsername, _ := s.redisClient.Get(ctx, "username:"+room.OwnerUuid.String()).Result()
+	room.OwnerName = ownerUsername
+
+	return room, nil
 }

@@ -32,6 +32,12 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	// Redis
+	redisClient, err := common.NewRedisClient()
+	if err != nil {
+		log.Fatal("Failed to connect to Redis:", err)
+	}
+
 	// RabbitMQ
 	rabbitConn, err := amqp.Dial(os.Getenv(("RABBITMQ_URL")))
 	if err != nil {
@@ -46,7 +52,7 @@ func main() {
 
 	// Service and Storage
 	storage := room.NewStorage(pool)
-	service := room.NewService(storage)
+	service := room.NewService(storage, redisClient)
 
 	// gRPC Server
 	grpcServer := grpc.NewServer()
