@@ -16,8 +16,8 @@ func NewStorage(pool *pgxpool.Pool) *Storage {
 
 func (s *Storage) CreateAuth(u Auth) error {
 	_, err := s.db.Exec(context.Background(),
-		"INSERT INTO credentials (id, email, password, hash_algorithm) VALUES ($1, $2, $3, $4)",
-		u.ID, u.Email, u.Password, u.HashAlgorithm,
+		"INSERT INTO credentials (id, email, password, password_salt) VALUES ($1, $2, $3, $4)",
+		u.ID, u.Email, u.Password, u.PasswordSalt,
 	)
 
 	if err == nil {
@@ -30,12 +30,12 @@ func (s *Storage) CreateAuth(u Auth) error {
 
 func (s *Storage) GetAuth(email string) (Auth, bool) {
 	row := s.db.QueryRow(context.Background(),
-		"SELECT id, email, password, hash_algorithm FROM credentials WHERE email = $1",
+		"SELECT id, email, password, password_salt FROM credentials WHERE email = $1",
 		email,
 	)
 
 	var u Auth
-	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.HashAlgorithm)
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.PasswordSalt)
 	if err != nil {
 		return Auth{}, false
 	}
@@ -44,10 +44,10 @@ func (s *Storage) GetAuth(email string) (Auth, bool) {
 }
 
 func (s *Storage) GetCredInfoByUuid(uuid string) (Auth, error) {
-	row := s.db.QueryRow(context.Background(), "SELECT id, email, password, hash_algorithm FROM credentials WHERE id = $1", uuid)
+	row := s.db.QueryRow(context.Background(), "SELECT id, email, password, password_salt FROM credentials WHERE id = $1", uuid)
 
 	var u Auth
-	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.HashAlgorithm)
+	err := row.Scan(&u.ID, &u.Email, &u.Password, &u.PasswordSalt)
 	if err != nil {
 		return Auth{}, err
 	}
@@ -55,8 +55,8 @@ func (s *Storage) GetCredInfoByUuid(uuid string) (Auth, error) {
 	return u, nil
 }
 
-func (s *Storage) UpdatePasswordForUuid(uuid, password, hashAlgorithm string) error {
-	_, err := s.db.Exec(context.Background(), "UPDATE credentials SET password = $1, hash_algorithm = $2 WHERE id = $3", password, hashAlgorithm, uuid)
+func (s *Storage) UpdatePasswordForUuid(uuid, password, passwordSalt string) error {
+	_, err := s.db.Exec(context.Background(), "UPDATE credentials SET password = $1, password_salt = $2 WHERE id = $3", password, passwordSalt, uuid)
 
 	if err == nil {
 		return nil

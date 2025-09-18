@@ -2,8 +2,9 @@ package authgateway
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,10 +23,21 @@ func NewService(storage *Storage, redisClient *redis.Client, rabbitChan *amqp.Ch
 	return &Service{storage: storage, redisClient: redisClient, rabbitChan: rabbitChan}
 }
 
+func generateSalt(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+
 func (s *Service) Register(email, password, username string) (string, error) {
 	id := uuid.NewString()
 
-	salt := os.Getenv("PASSWORD_SALT")
+	salt, err := generateSalt(16)
+	if err != nil {
+		return "", err
+	}
 	combined := password + salt
 	hashed, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
 	if err != nil {
@@ -33,10 +45,10 @@ func (s *Service) Register(email, password, username string) (string, error) {
 	}
 
 	u := Auth{
-		ID:            id,
-		Email:         email,
-		Password:      string(hashed),
-		HashAlgorithm: "bcrypt",
+		ID:           id,
+		Email:        email,
+		Password:     string(hashed),
+		PasswordSalt: salt,
 	}
 
 	err = s.storage.CreateAuth(u)
@@ -61,8 +73,7 @@ func (s *Service) Login(email, password string) (string, string, error) {
 		return "", "", ErrInvalidCreds
 	}
 
-	salt := os.Getenv("PASSWORD_SALT")
-	combined := password + salt
+	combined := password + u.PasswordSalt
 
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(combined))
 	if err != nil {
@@ -116,7 +127,7 @@ func (s *Service) UpdatePassword(uuid, newPassword, oldPassword string) error {
 		return err
 	}
 
-	salt := os.Getenv("PASSWORD_SALT")
+	salt := u.PasswordSalt
 	combined := oldPassword + salt
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(combined))
@@ -124,13 +135,17 @@ func (s *Service) UpdatePassword(uuid, newPassword, oldPassword string) error {
 		return ErrInvalidPassword
 	}
 
+	salt, err = generateSalt(16)
+	if err != nil {
+		return err
+	}
 	combined = newPassword + salt
 	newHashed, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	err = s.storage.UpdatePasswordForUuid(uuid, string(newHashed), "bcrypt")
+	err = s.storage.UpdatePasswordForUuid(uuid, string(newHashed), salt)
 	if err != nil {
 		return err
 	}
