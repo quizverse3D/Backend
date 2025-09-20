@@ -12,6 +12,7 @@ type Room struct {
 	OwnerName    string
 	Name         string
 	PasswordHash *string
+	PasswordSalt string
 	MaxPlayers   int32
 	CreatedAt    *time.Time
 	IsPublic     bool
