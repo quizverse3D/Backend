@@ -3,6 +3,7 @@ package room
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,5 +27,14 @@ func (s *Storage) CreateRoom(ctx context.Context, room Room) (*Room, error) {
 		return nil, err
 	}
 
+	return &r, nil
+}
+
+func (s *Storage) GetRoomById(ctx context.Context, uuid uuid.UUID) (*Room, error) {
+	row := s.pool.QueryRow(ctx, `SELECT id, name, owner_id, password_hash, password_salt, max_players, created_at, is_public FROM rooms WHERE id = $1`, uuid.String())
+	var r Room
+	if err := row.Scan(&r.ID, &r.Name, &r.OwnerUuid, &r.PasswordHash, &r.PasswordSalt, &r.MaxPlayers, &r.CreatedAt, &r.IsPublic); err != nil {
+		return nil, ErrRoomNotFound
+	}
 	return &r, nil
 }

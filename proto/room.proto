@@ -8,6 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 service RoomService {
     rpc CreateRoom(CreateRoomParamsRequest) returns (CreateRoomParamsResponse);
+    rpc GetRoomById(GetRoomParamsRequest) returns (GetRoomParamsResponse);
 }
 
 message CreateRoomParamsRequest {
@@ -19,6 +20,20 @@ message CreateRoomParamsRequest {
 }
 
 message CreateRoomParamsResponse {
+    string id = 1;
+    string name = 2;
+    string owner_id = 3;
+    string owner_name = 4;
+    int32 max_players = 5;
+    bool is_public = 6;
+    google.protobuf.Timestamp created_at = 7;
+}
+
+message GetRoomParamsRequest {
+    string id = 1;
+}
+
+message GetRoomParamsResponse {
     string id = 1;
     string name = 2;
     string owner_id = 3;

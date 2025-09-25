@@ -42,3 +42,26 @@ func (s *Server) CreateRoom(ctx context.Context, req *pb.CreateRoomParamsRequest
 		IsPublic:   room.IsPublic,
 		CreatedAt:  timestamppb.New(*room.CreatedAt)}, nil
 }
+
+func (s *Server) GetRoomById(ctx context.Context, req *pb.GetRoomParamsRequest) (*pb.GetRoomParamsResponse, error) {
+	// parse pb
+	id, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, fmt.Errorf("invalid id: %w", err)
+	}
+
+	room, err := s.svc.GetRoomById(ctx, id, true)
+	if err != nil {
+		log.Printf("failed to get room info: %v", err)
+		return nil, err
+	}
+
+	return &pb.GetRoomParamsResponse{
+		Id:         room.ID.String(),
+		Name:       room.Name,
+		OwnerId:    room.OwnerUuid.String(),
+		OwnerName:  room.OwnerName,
+		MaxPlayers: room.MaxPlayers,
+		IsPublic:   room.IsPublic,
+		CreatedAt:  timestamppb.New(*room.CreatedAt)}, nil
+}

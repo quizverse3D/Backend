@@ -279,6 +279,13 @@ paths:
                     type: string
                     format: uuid
                     description: id комнаты
+                  owner_id:
+                    type: string
+                    format: uuid
+                    description: id создателя
+                  owner_name:
+                    type: string
+                    description: имя создателя
                   name:
                     type: string
                     description: название комнаты
@@ -296,6 +303,57 @@ paths:
           description: Unauthorized (invalid or missing token)
         "404":
           description: Invalid creation parameters
+    get:
+      summary: Получить информацию о комнате
+      description: Не включает информацию о хеше или соли пароля
+      tags:
+        - Rooms Service
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID комнаты
+      responses:
+        "200":
+          description: Базовая информация о комнате
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: id комнаты
+                  owner_id:
+                    type: string
+                    format: uuid
+                    description: id создателя
+                  owner_name:
+                    type: string
+                    description: имя создателя
+                  name:
+                    type: string
+                    description: название комнаты
+                  max_players:
+                    type: integer
+                    description: максимальное кол-во игроков
+                  is_public:
+                    type: boolean
+                    description: доступен ли в общем списке
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Время создания записи в формате ISO 8601
+        "401":
+          description: Unauthorized (invalid or missing token)
+        "404":
+          description: Room not found
 
 components:
   securitySchemes:

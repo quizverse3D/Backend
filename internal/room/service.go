@@ -63,3 +63,19 @@ func (s *Service) CreateRoom(ctx context.Context, userUuid uuid.UUID, name *stri
 
 	return room, nil
 }
+
+func (s *Service) GetRoomById(ctx context.Context, uuid uuid.UUID, isHiddenPassword bool) (*Room, error) {
+	room, err := s.storage.GetRoomById(ctx, uuid)
+	if err != nil {
+		return nil, err
+	}
+	if isHiddenPassword {
+		room.PasswordHash = nil
+		room.PasswordSalt = ""
+	}
+	room.OwnerName, err = s.redisClient.Get(ctx, "username:"+room.OwnerUuid.String()).Result()
+	if err != nil {
+		return nil, err
+	}
+	return room, nil
+}

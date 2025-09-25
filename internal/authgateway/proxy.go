@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 
 	roomPb "github.com/quizverse3D/Backend/internal/pb/room"
@@ -97,6 +98,11 @@ func NewRoomGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 					req.UserUuid = userId
 					return client.CreateRoom(ctx, &req)
 
+				case http.MethodGet:
+					var req roomPb.GetRoomParamsRequest
+					req.Id = ctx.Value("requestQuery").(url.Values).Get("id")
+					return client.GetRoomById(ctx, &req)
+
 				default:
 					return nil, errors.New("unsupported method")
 				}
@@ -124,6 +130,7 @@ func ProxyHandler(grpcServiceRoute GRPCServiceRoute) http.HandlerFunc {
 
 		ctx := context.WithValue(r.Context(), "requestPath", r.URL.Path)
 		ctx = context.WithValue(ctx, "requestMethod", r.Method)
+		ctx = context.WithValue(ctx, "requestQuery", r.URL.Query())
 
 		resp, err := grpcServiceRoute.Call(ctx, grpcServiceRoute.Conn, userId.(string), body)
 		if err != nil {
