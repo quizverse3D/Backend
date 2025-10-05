@@ -354,6 +354,86 @@ paths:
           description: Unauthorized (invalid or missing token)
         "404":
           description: Room not found
+  /room/api/v1/rooms:
+    get:
+      summary: Поиск публичных комнат
+      description: Возвращает список опубликованных комнат по названию с пагинацией.
+      tags:
+        - Rooms Service
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Строка поиска по названию комнаты
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Номер страницы (начиная с 1)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Количество элементов на странице
+      responses:
+        "200":
+          description: Найденные комнаты
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rooms:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: id комнаты
+                        owner_id:
+                          type: string
+                          format: uuid
+                          description: id владельца
+                        owner_name:
+                          type: string
+                          description: имя владельца из Redis
+                        name:
+                          type: string
+                          description: название комнаты
+                        max_players:
+                          type: integer
+                          description: максимальное количество игроков
+                        is_public:
+                          type: boolean
+                          description: признак публичности
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Время создания комнаты в формате ISO 8601
+                  total:
+                    type: integer
+                    description: Общее количество записей, удовлетворяющих фильтрам
+                  page:
+                    type: integer
+                    description: Текущий номер страницы
+                  size:
+                    type: integer
+                    description: Количество элементов на странице
+        "401":
+          description: Unauthorized (invalid or missing token)
 
 components:
   securitySchemes:

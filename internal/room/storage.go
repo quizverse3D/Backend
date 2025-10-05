@@ -38,3 +38,41 @@ func (s *Storage) GetRoomById(ctx context.Context, uuid uuid.UUID) (*Room, error
 	}
 	return &r, nil
 }
+
+func (s *Storage) SearchRooms(ctx context.Context, search *string, limit, offset int32) ([]Room, int64, error) {
+	var searchParam interface{}
+	if search != nil {
+		searchParam = *search
+	}
+
+	const selectQuery = `
+		SELECT id, owner_id, name, max_players, created_at, is_public
+		FROM rooms
+		WHERE is_public = TRUE AND ($1::text IS NULL OR name ILIKE '%' || $1 || '%')
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := s.pool.Query(ctx, selectQuery, searchParam, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	rooms := make([]Room, 0)
+	for rows.Next() {
+		var room Room
+		if err := rows.Scan(&room.ID, &room.OwnerUuid, &room.Name, &room.MaxPlayers, &room.CreatedAt, &room.IsPublic); err != nil {
+			return nil, 0, err
+		}
+		room.PasswordHash = nil
+		room.PasswordSalt = ""
+		rooms = append(rooms, room)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
+	return rooms, int64(len(rooms)), nil
+}

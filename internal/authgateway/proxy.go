@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	roomPb "github.com/quizverse3D/Backend/internal/pb/room"
@@ -102,6 +103,32 @@ func NewRoomGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 					var req roomPb.GetRoomParamsRequest
 					req.Id = ctx.Value("requestQuery").(url.Values).Get("id")
 					return client.GetRoomById(ctx, &req)
+
+				default:
+					return nil, errors.New("unsupported method")
+				}
+
+			case "rooms":
+				switch method {
+				case http.MethodGet:
+					query := ctx.Value("requestQuery").(url.Values)
+					var req roomPb.SearchRoomsRequest
+					req.Query = query.Get("query")
+					if page := query.Get("page"); page != "" {
+						pageVal, err := strconv.ParseUint(page, 10, 32)
+						if err != nil {
+							return nil, err
+						}
+						req.Page = uint32(pageVal)
+					}
+					if size := query.Get("size"); size != "" {
+						sizeVal, err := strconv.ParseUint(size, 10, 32)
+						if err != nil {
+							return nil, err
+						}
+						req.Size = uint32(sizeVal)
+					}
+					return client.SearchRooms(ctx, &req)
 
 				default:
 					return nil, errors.New("unsupported method")

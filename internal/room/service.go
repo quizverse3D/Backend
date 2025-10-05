@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -78,4 +79,46 @@ func (s *Service) GetRoomById(ctx context.Context, uuid uuid.UUID, isHiddenPassw
 		return nil, err
 	}
 	return room, nil
+}
+
+func (s *Service) SearchRooms(ctx context.Context, search *string, page, size int32) ([]Room, int64, error) {
+	if size <= 0 {
+		size = 10
+	}
+	if size > 100 {
+		size = 100
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	var normalizedValue string
+	var normalized *string
+	if search != nil {
+		trimmed := strings.TrimSpace(*search)
+		if trimmed != "" {
+			normalizedValue = trimmed
+			normalized = &normalizedValue
+		}
+	}
+
+	offset := (page - 1) * size
+	rooms, total, err := s.storage.SearchRooms(ctx, normalized, size, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for i := range rooms {
+		username, err := s.redisClient.Get(ctx, "username:"+rooms[i].OwnerUuid.String()).Result()
+		if err != nil {
+			username = ""
+		}
+		if username != "" {
+			rooms[i].OwnerName = username
+		}
+		rooms[i].PasswordHash = nil
+		rooms[i].PasswordSalt = ""
+	}
+
+	return rooms, total, nil
 }

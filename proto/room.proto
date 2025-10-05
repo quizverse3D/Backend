@@ -9,6 +9,7 @@ import "google/protobuf/timestamp.proto";
 service RoomService {
     rpc CreateRoom(CreateRoomParamsRequest) returns (CreateRoomParamsResponse);
     rpc GetRoomById(GetRoomParamsRequest) returns (GetRoomParamsResponse);
+    rpc SearchRooms(SearchRoomsRequest) returns (SearchRoomsResponse);
 }
 
 message CreateRoomParamsRequest {
@@ -41,4 +42,17 @@ message GetRoomParamsResponse {
     int32 max_players = 5;
     bool is_public = 6;
     google.protobuf.Timestamp created_at = 7;
+}
+
+message SearchRoomsRequest {
+    string query = 1;
+    uint32 page = 2;
+    uint32 size = 3;
+}
+
+message SearchRoomsResponse {
+    repeated GetRoomParamsResponse rooms = 1;
+    uint64 total = 2;
+    uint32 page = 3;
+    uint32 size = 4;
 }
