@@ -237,7 +237,7 @@ paths:
           description: Unauthorized (invalid or missing token)
 
   /room/api/v1/room:
-    put:
+    post:
       summary: Создать новую комнату
       description: Создаёт на сервере новую комнату с заданными параметрами. Пароль можно не указывать. Кол-во игроков от 1 до 32 включительно.
       tags:

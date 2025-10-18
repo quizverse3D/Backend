@@ -91,7 +91,7 @@ func NewRoomGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 			switch path {
 			case "room":
 				switch method {
-				case http.MethodPut:
+				case http.MethodPost:
 					var req roomPb.CreateRoomParamsRequest
 					if err := json.Unmarshal(body, &req); err != nil {
 						return nil, err
