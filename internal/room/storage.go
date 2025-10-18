@@ -76,3 +76,14 @@ func (s *Storage) SearchRooms(ctx context.Context, search *string, limit, offset
 
 	return rooms, int64(len(rooms)), nil
 }
+
+func (s *Storage) DeleteRoom(ctx context.Context, id uuid.UUID) error {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM rooms WHERE id = $1`, id)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrRoomNotFound
+	}
+	return nil
+}

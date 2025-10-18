@@ -10,6 +10,7 @@ service RoomService {
     rpc CreateRoom(CreateRoomParamsRequest) returns (CreateRoomParamsResponse);
     rpc GetRoomById(GetRoomParamsRequest) returns (GetRoomParamsResponse);
     rpc SearchRooms(SearchRoomsRequest) returns (SearchRoomsResponse);
+    rpc DeleteRoom(DeleteRoomRequest) returns (DeleteRoomResponse);
 }
 
 message CreateRoomParamsRequest {
@@ -55,4 +56,13 @@ message SearchRoomsResponse {
     uint64 total = 2;
     uint32 page = 3;
     uint32 size = 4;
+}
+
+message DeleteRoomRequest {
+    string id = 1;
+    string user_uuid = 2;
+}
+
+message DeleteRoomResponse {
+    bool success = 1;
 }

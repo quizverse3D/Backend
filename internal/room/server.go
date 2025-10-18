@@ -125,3 +125,21 @@ func (s *Server) SearchRooms(ctx context.Context, req *pb.SearchRoomsRequest) (*
 
 	return resp, nil
 }
+
+func (s *Server) DeleteRoom(ctx context.Context, req *pb.DeleteRoomRequest) (*pb.DeleteRoomResponse, error) {
+	roomID, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, fmt.Errorf("invalid id: %w", err)
+	}
+	userUuid, err := uuid.Parse(req.GetUserUuid())
+	if err != nil {
+		return nil, fmt.Errorf("invalid user_uuid: %w", err)
+	}
+
+	if err := s.svc.DeleteRoom(ctx, userUuid, roomID); err != nil {
+		log.Printf("failed to delete room: %v", err)
+		return nil, err
+	}
+
+	return &pb.DeleteRoomResponse{Success: true}, nil
+}

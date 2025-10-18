@@ -320,7 +320,7 @@ paths:
           description: UUID комнаты
       responses:
         "200":
-          description: Базовая информация о комнате
+          description: Параметры комнаты
           content:
             application/json:
               schema:
@@ -354,6 +354,36 @@ paths:
           description: Unauthorized (invalid or missing token)
         "404":
           description: Room not found
+    delete:
+      summary: Удалить комнату
+      description: Удаляет ранее созданную комнату. Доступно только владельцу комнаты.
+      tags:
+        - Rooms Service
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID комнаты
+      responses:
+        "200":
+          description: Успешное удаление комнаты
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Признак успешного удаления
+        "401":
+          description: Unauthorized (invalid or missing token)
+        "404":
+          description: Комната не найдена или не принадлежит пользователю
   /room/api/v1/rooms:
     get:
       summary: Поиск публичных комнат

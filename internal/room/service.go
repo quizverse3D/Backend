@@ -122,3 +122,14 @@ func (s *Service) SearchRooms(ctx context.Context, search *string, page, size in
 
 	return rooms, total, nil
 }
+
+func (s *Service) DeleteRoom(ctx context.Context, userUuid, roomUuid uuid.UUID) error {
+	room, err := s.storage.GetRoomById(ctx, roomUuid)
+	if err != nil {
+		return err
+	}
+	if room.OwnerUuid != userUuid {
+		return ErrRoomForbidden
+	}
+	return s.storage.DeleteRoom(ctx, roomUuid)
+}

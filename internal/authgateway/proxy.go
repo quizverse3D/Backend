@@ -104,6 +104,18 @@ func NewRoomGrpcServiceRoute(targetAddr string, urlPrefix string) (GRPCServiceRo
 					req.Id = ctx.Value("requestQuery").(url.Values).Get("id")
 					return client.GetRoomById(ctx, &req)
 
+				case http.MethodDelete:
+					query := ctx.Value("requestQuery").(url.Values)
+					id := query.Get("id")
+					if id == "" {
+						return nil, errors.New("id is required")
+					}
+					req := roomPb.DeleteRoomRequest{
+						Id:       id,
+						UserUuid: userId,
+					}
+					return client.DeleteRoom(ctx, &req)
+
 				default:
 					return nil, errors.New("unsupported method")
 				}
